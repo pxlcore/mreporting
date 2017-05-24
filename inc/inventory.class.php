@@ -93,39 +93,30 @@ class PluginMreportingInventory Extends PluginMreportingBaseclass {
    function computersByFabricant($config = array()) {
       global $DB;
 
-      $manufacturerObj = new Manufacturer();
-      $manufacturers = $manufacturerObj->find();
-      if (empty($manufacturers)) {
-         return array();
-      }
-
       $sql_entities = " AND c.`entities_id` IN ({$this->where_entities})";
       $sql_states   = self::getStateCondition('c.states_id');
-      $query = "";
-      $first = true;
-      foreach ($manufacturers as $manufacturer) {
-         $query.= (!$first?" UNION ":"").
-                  "SELECT m.name as Manufacturer, count(*) Total, count(*) * 100 / (SELECT count(*)
-                        FROM glpi_computers     as c,
-                             glpi_manufacturers as m
-                        WHERE c.`is_deleted`=0
-                              AND c.`is_template`=0
-                              AND c.`manufacturers_id` = m.`id`
-                              $sql_entities
-                              $sql_states) as Percent
-                    FROM glpi_computers     as c,
-                         glpi_manufacturers as m
-                    WHERE c.`manufacturers_id` = m.`id`
-                          AND c.`is_deleted` = 0
-                          AND c.`is_template` = 0
-                          AND m.`id` = ".$manufacturer['id']."
-                          $sql_entities
-                          $sql_states";
-         $first = false;
-      }
-      $query .= " ORDER BY Total DESC";
 
+      $query = "SELECT m.`name`   as Manufacturer,
+                       count(*) as Total,
+                       count(*) * 100 / (SELECT count(*)
+                           FROM glpi_computers     as c,
+                                glpi_manufacturers as m
+                           WHERE c.`is_deleted` = 0
+                                 AND c.`is_template` = 0
+                                 AND c.`manufacturers_id` = m.`id`
+                                 $sql_entities
+                                 $sql_states) as Percent
+         FROM glpi_computers     as c,
+              glpi_manufacturers as m
+         WHERE c.`manufacturers_id` = m.`id`
+               $sql_entities
+               $sql_states
+               AND c.`is_deleted` = 0
+               AND c.`is_template` = 0
+         GROUP BY m.`name`
+         ORDER BY Total DESC";
       $result = $DB->query($query);
+
 
       $datas = array();
       while ($computer = $DB->fetch_assoc($result)) {
@@ -137,7 +128,7 @@ class PluginMreportingInventory Extends PluginMreportingBaseclass {
 
       return $datas;
    }
-
+   
    /* ==== COMPUTER'S TYPE REPORTS ==== */
    function reportPieComputersByType($config = array()) {
       $_SESSION['mreporting_selector']['reportPieComputersByType'] = array('multiplestates');
@@ -395,7 +386,7 @@ class PluginMreportingInventory Extends PluginMreportingBaseclass {
       $_SESSION['mreporting_selector']['reportHbarWindows'] = array('multiplestates');
 
       $sql_entities = " AND entities_id IN ({$this->where_entities})";
-      $sql_states   = self::getStateCondition('c.states_id');
+      $sql_states   = self::getStateCondition('glpi_computers.states_id');
       $total_computers = countElementsInTable('glpi_computers',
                                               "`is_deleted`=0 AND `is_template`=0 $sql_entities");
 
@@ -544,7 +535,7 @@ class PluginMreportingInventory Extends PluginMreportingBaseclass {
                                  ON `s`.`id` = `c`.`operatingsystemversions_id`
                               WHERE c.`operatingsystems_id` = '".$os['id']."'
                                AND `c`.`entities_id` IN ({$this->where_entities})
-                               $sql_states2
+                               $sql_states
                               GROUP BY c.operatingsystemversions_id
                               ORDER BY s.name ASC";
             foreach ($DB->request($query_details) as $version) {
