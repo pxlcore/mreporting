@@ -29,24 +29,24 @@
 
 class PluginMreportingHelpdesk Extends PluginMreportingBaseclass {
 
-   function reportPieTicketNumberByEntity($config = array()) {
-      $_SESSION['mreporting_selector']['reportPieTicketNumberByEntity'] = array('dateinterval');
+   function reportPieTicketNumberByEntity($config = []) {
+      $_SESSION['mreporting_selector']['reportPieTicketNumberByEntity'] = ['dateinterval'];
 
       return $this->reportHbarTicketNumberByEntity($config);
    }
 
-   function reportHbarTicketNumberByEntity($config = array()) {
+   function reportHbarTicketNumberByEntity($config = []) {
       global $DB;
 
-      $_SESSION['mreporting_selector']['reportHbarTicketNumberByEntity'] = array('dateinterval',
-                                                                                 'limit');
+      $_SESSION['mreporting_selector']['reportHbarTicketNumberByEntity'] = ['dateinterval',
+                                                                            'limit'];
 
       //Init delay value
       $this->sql_date = PluginMreportingCommon::getSQLDate("`glpi_tickets`.`date`",
                                                            $config['delay'],
                                                            $config['randname']);
 
-      $datas = array();
+      $datas = [];
 
       $query = "SELECT COUNT(glpi_tickets.id) as count,
          glpi_entities.name as name
@@ -66,7 +66,7 @@ class PluginMreportingHelpdesk Extends PluginMreportingBaseclass {
 
       $result = $DB->query($query);
 
-      while ($ticket = $DB->fetch_assoc($result)) {
+      while ($ticket = $DB->fetchAssoc($result)) {
          if (empty($ticket['name'])) {
             $label = __("Root entity");
          } else {
@@ -79,14 +79,14 @@ class PluginMreportingHelpdesk Extends PluginMreportingBaseclass {
 
    }
 
-   function reportHgbarTicketNumberByCatAndEntity($config = array()) {
+   function reportHgbarTicketNumberByCatAndEntity($config = []) {
       global $DB;
 
       $_SESSION['mreporting_selector']['reportHgbarTicketNumberByCatAndEntity']
-         = array('dateinterval');
+         = ['dateinterval'];
 
-      $datas = array();
-      $tmp_datas = array();
+      $datas = [];
+      $tmp_datas = [];
 
       //Init delay value
       $this->sql_date = PluginMreportingCommon::getSQLDate("glpi_tickets.date",
@@ -110,8 +110,8 @@ class PluginMreportingHelpdesk Extends PluginMreportingBaseclass {
 
       $res_cat = $DB->query($query_cat);
 
-      $categories = array();
-      while ($data = $DB->fetch_assoc($res_cat)) {
+      $categories = [];
+      while ($data = $DB->fetchAssoc($res_cat)) {
          if (empty($data['category'])) {
             $data['category'] = __("None");
          }
@@ -120,7 +120,7 @@ class PluginMreportingHelpdesk Extends PluginMreportingBaseclass {
 
       $labels2 = array_keys($categories);
 
-      $tmp_cat = array();
+      $tmp_cat = [];
       foreach (array_values($categories) as $id) {
          $tmp_cat[] = "cat_$id";
       }
@@ -145,7 +145,7 @@ class PluginMreportingHelpdesk Extends PluginMreportingBaseclass {
       GROUP BY glpi_entities.name, glpi_tickets.itilcategories_id
       ORDER BY glpi_entities.name ASC, glpi_tickets.itilcategories_id ASC";
       $res = $DB->query($query);
-      while ($data = $DB->fetch_assoc($res)) {
+      while ($data = $DB->fetchAssoc($res)) {
          if (empty($data['entity'])) {
             $data['entity'] = __("Root entity");
          }
@@ -159,7 +159,7 @@ class PluginMreportingHelpdesk Extends PluginMreportingBaseclass {
 
       //replace cat_id by labels2
       foreach ($tmp_datas as $entity => &$subdata) {
-         $tmp = array();
+         $tmp = [];
          $i = 0;
          foreach ($subdata as $value) {
             $cat_label = $labels2[$i];
@@ -178,18 +178,18 @@ class PluginMreportingHelpdesk Extends PluginMreportingBaseclass {
       return $datas;
    }
 
-   function reportPieTicketOpenedAndClosed($config = array()) {
+   function reportPieTicketOpenedAndClosed($config = []) {
       global $DB;
 
       $_SESSION['mreporting_selector']['reportPieTicketOpenedAndClosed']
-         = array('dateinterval');
+         = ['dateinterval'];
 
       //Init delay value
       $this->sql_date = PluginMreportingCommon::getSQLDate("glpi_tickets.date",
                                                            $config['delay'],
                                                            $config['randname']);
 
-      $datas = array();
+      $datas = [];
       foreach ($this->filters as $filter) {
 
          $query = "SELECT COUNT(*)
@@ -206,14 +206,14 @@ class PluginMreportingHelpdesk Extends PluginMreportingBaseclass {
          $datas[$filter['label']] = $DB->result($result, 0, 0);
       }
 
-      return array('datas' => $datas);
+      return ['datas' => $datas];
    }
 
-   function reportPieTicketOpenedbyStatus($config = array()) {
+   function reportPieTicketOpenedbyStatus($config = []) {
       global $DB;
 
       $_SESSION['mreporting_selector']['reportPieTicketOpenedbyStatus']
-         = array('dateinterval', 'allstates');
+         = ['dateinterval', 'allstates'];
 
       //Init delay value
       $this->sql_date = PluginMreportingCommon::getSQLDate("glpi_tickets.date",
@@ -228,10 +228,10 @@ class PluginMreportingHelpdesk Extends PluginMreportingBaseclass {
             }
          }
       } else {
-         $status_to_show = array('1', '2', '3', '4');
+         $status_to_show = ['1', '2', '3', '4'];
       }
 
-      $datas = array();
+      $datas = [];
       $status = $this->filters['open']['status'] + $this->filters['close']['status'];
       foreach ($status as $key => $val) {
          if (in_array($key, $status_to_show)) {
@@ -243,7 +243,7 @@ class PluginMreportingHelpdesk Extends PluginMreportingBaseclass {
                   AND glpi_tickets.status ='{$key}'";
             $result = $DB->query($query);
 
-            while ($ticket = $DB->fetch_assoc($result)) {
+            while ($ticket = $DB->fetchAssoc($result)) {
                $datas['datas'][$val] = $ticket['count'];
             }
          }
@@ -252,11 +252,11 @@ class PluginMreportingHelpdesk Extends PluginMreportingBaseclass {
       return $datas;
    }
 
-   function reportPieTopTenAuthor($config = array()) {
+   function reportPieTopTenAuthor($config = []) {
       global $DB;
 
       $_SESSION['mreporting_selector']['reportPieTopTenAuthor']
-         = array('dateinterval');
+         = ['dateinterval'];
 
       //Init delay value
       $this->sql_date = PluginMreportingCommon::getSQLDate("glpi_tickets.date",
@@ -266,7 +266,7 @@ class PluginMreportingHelpdesk Extends PluginMreportingBaseclass {
                                                                 $config['delay'],
                                                                 $config['randname']);
 
-      $datas = array();
+      $datas = [];
       $query = "SELECT COUNT(glpi_tickets.id) as count, glpi_tickets_users.users_id as users_id
          FROM glpi_tickets
          LEFT JOIN glpi_tickets_users
@@ -279,7 +279,7 @@ class PluginMreportingHelpdesk Extends PluginMreportingBaseclass {
          ORDER BY count DESC
          LIMIT 10";
       $result = $DB->query($query);
-      while ($ticket = $DB->fetch_assoc($result)) {
+      while ($ticket = $DB->fetchAssoc($result)) {
          if ($ticket['users_id']==0) {
             $label = __("Undefined", 'mreporting');
          } else {
@@ -292,15 +292,15 @@ class PluginMreportingHelpdesk Extends PluginMreportingBaseclass {
    }
 
 
-   function reportHgbarOpenTicketNumberByCategoryAndByType($config = array()) {
+   function reportHgbarOpenTicketNumberByCategoryAndByType($config = []) {
       $_SESSION['mreporting_selector']['reportHgbarOpenTicketNumberByCategoryAndByType']
-         = array('dateinterval');
+         = ['dateinterval'];
       return $this->reportHgbarTicketNumberByCategoryAndByType($config, 'open');
    }
 
-   function reportHgbarCloseTicketNumberByCategoryAndByType($config = array()) {
+   function reportHgbarCloseTicketNumberByCategoryAndByType($config = []) {
       $_SESSION['mreporting_selector']['reportHgbarCloseTicketNumberByCategoryAndByType']
-         = array('dateinterval');
+         = ['dateinterval'];
       return $this->reportHgbarTicketNumberByCategoryAndByType($config, 'close');
    }
 
@@ -308,9 +308,9 @@ class PluginMreportingHelpdesk Extends PluginMreportingBaseclass {
       global $DB;
 
       $_SESSION['mreporting_selector']['reportHgbarTicketNumberByCategoryAndByType']
-         = array('dateinterval');
+         = ['dateinterval'];
 
-      $datas = array();
+      $datas = [];
 
       //Init delay value
       $this->sql_date = PluginMreportingCommon::getSQLDate("glpi_tickets.date",
@@ -333,8 +333,8 @@ class PluginMreportingHelpdesk Extends PluginMreportingBaseclass {
          ORDER BY glpi_itilcategories.name";
       $result = $DB->query($query);
 
-      $datas['datas'] = array();
-      while ($ticket = $DB->fetch_assoc($result)) {
+      $datas['datas'] = [];
+      while ($ticket = $DB->fetchAssoc($result)) {
          if (is_null($ticket['category_id'])) {
             $ticket['category_id'] = 0;
             $ticket['category_name'] = __("None");
@@ -351,13 +351,13 @@ class PluginMreportingHelpdesk Extends PluginMreportingBaseclass {
       return $datas;
    }
 
-   function reportHgbarTicketNumberByService($config = array()) {
+   function reportHgbarTicketNumberByService($config = []) {
       global $DB;
 
       $_SESSION['mreporting_selector']['reportHgbarTicketNumberByService']
-         = array('dateinterval');
+         = ['dateinterval'];
 
-      $datas = array();
+      $datas = [];
 
       //Init delay value
       $this->sql_date = PluginMreportingCommon::getSQLDate("glpi_tickets.date",
@@ -395,7 +395,7 @@ class PluginMreportingHelpdesk Extends PluginMreportingBaseclass {
             ORDER BY glpi_groups.name";
          $result = $DB->query($query);
 
-         while ($ticket = $DB->fetch_assoc($result)) {
+         while ($ticket = $DB->fetchAssoc($result)) {
             $datas['datas'][$ticket['group_name']][$filter['label']] = $ticket['count'];
          }
 
@@ -404,13 +404,13 @@ class PluginMreportingHelpdesk Extends PluginMreportingBaseclass {
       return $datas;
    }
 
-   function reportHgbarOpenedTicketNumberByCategory($config = array()) {
+   function reportHgbarOpenedTicketNumberByCategory($config = []) {
       global $DB;
 
       $_SESSION['mreporting_selector']['reportHgbarOpenedTicketNumberByCategory']
-         = array('dateinterval', 'allstates');
+         = ['dateinterval', 'allstates'];
 
-      $datas = array();
+      $datas = [];
 
       //Init delay value
       $this->sql_date = PluginMreportingCommon::getSQLDate("glpi_tickets.date",
@@ -425,7 +425,7 @@ class PluginMreportingHelpdesk Extends PluginMreportingBaseclass {
             }
          }
       } else {
-         $status_to_show = array('1', '2', '3', '4');
+         $status_to_show = ['1', '2', '3', '4'];
       }
 
       $status = $this->filters['open']['status'] + $this->filters['close']['status'];
@@ -446,7 +446,7 @@ class PluginMreportingHelpdesk Extends PluginMreportingBaseclass {
          ORDER BY glpi_itilcategories.name";
       $result = $DB->query($query);
 
-      while ($ticket = $DB->fetch_assoc($result)) {
+      while ($ticket = $DB->fetchAssoc($result)) {
          if (is_null($ticket['category_name'])) {
             $ticket['category_name'] = __("None");
          }
@@ -472,18 +472,18 @@ class PluginMreportingHelpdesk Extends PluginMreportingBaseclass {
       return $datas;
    }
 
-   function reportLineNbTicket($config = array()) {
-      $_SESSION['mreporting_selector']['reportLineNbTicket'] = array('dateinterval');
+   function reportLineNbTicket($config = []) {
+      $_SESSION['mreporting_selector']['reportLineNbTicket'] = ['dateinterval'];
 
       return $this->reportAreaNbTicket($config, false);
    }
 
-   function reportAreaNbTicket($config=array(), $area = true) {
+   function reportAreaNbTicket($config = [], $area = true) {
       global $DB;
 
-      $_SESSION['mreporting_selector']['reportAreaNbTicket'] = array('dateinterval', 'period');
+      $_SESSION['mreporting_selector']['reportAreaNbTicket'] = ['dateinterval', 'period'];
 
-      $datas = array();
+      $datas = [];
 
       //Init delay value
       $this->sql_date = PluginMreportingCommon::getSQLDate("glpi_tickets.date",
@@ -501,31 +501,31 @@ class PluginMreportingHelpdesk Extends PluginMreportingBaseclass {
       GROUP BY period
       ORDER BY period";
       $res = $DB->query($query);
-      while ($data = $DB->fetch_assoc($res)) {
+      while ($data = $DB->fetchAssoc($res)) {
          $datas['datas'][$data['period_name']] = $data['nb'];
       }
 
       return $datas;
    }
 
-   function reportVstackbarNbTicket($config = array()) {
-      $_SESSION['mreporting_selector']['reportVstackbarNbTicket'] = array('dateinterval');
+   function reportVstackbarNbTicket($config = []) {
+      $_SESSION['mreporting_selector']['reportVstackbarNbTicket'] = ['dateinterval'];
       return $this->reportGlineNbTicket($config, false);
    }
 
-   function reportGareaNbTicket($config = array()) {
-      $_SESSION['mreporting_selector']['reportGareaNbTicket'] = array('dateinterval');
+   function reportGareaNbTicket($config = []) {
+      $_SESSION['mreporting_selector']['reportGareaNbTicket'] = ['dateinterval'];
       return $this->reportGlineNbTicket($config, true);
    }
 
-   function reportGlineNbTicket($config = array(), $area = false) {
+   function reportGlineNbTicket($config = [], $area = false) {
       global $DB;
 
       $_SESSION['mreporting_selector']['reportGlineNbTicket']
-         = array('dateinterval', 'period', 'allstates');
+         = ['dateinterval', 'period', 'allstates'];
 
-      $datas = array();
-      $tmp_datas = array();
+      $datas = [];
+      $tmp_datas = [];
 
       //Init delay value
       $this->sql_date = PluginMreportingCommon::getSQLDate("glpi_tickets.date",
@@ -540,7 +540,7 @@ class PluginMreportingHelpdesk Extends PluginMreportingBaseclass {
             }
          }
       } else {
-         $status_to_show = array('1', '2', '3', '4');
+         $status_to_show = ['1', '2', '3', '4'];
       }
 
       //get dates used in this period
@@ -554,12 +554,12 @@ class PluginMreportingHelpdesk Extends PluginMreportingBaseclass {
       AND status IN(".implode(',', $status_to_show).")
       ORDER BY `date` ASC";
       $res_date = $DB->query($query_date);
-      $dates = array();
-      while ($data = $DB->fetch_assoc($res_date)) {
+      $dates = [];
+      while ($data = $DB->fetchAssoc($res_date)) {
          $dates[$data['period']] = $data['period'];
       }
 
-      $tmp_date = array();
+      $tmp_date = [];
       foreach (array_values($dates) as $id) {
          $tmp_date[] = $id;
       }
@@ -577,7 +577,7 @@ class PluginMreportingHelpdesk Extends PluginMreportingBaseclass {
       GROUP BY period, status
       ORDER BY period, status";
       $res = $DB->query($query);
-      while ($data = $DB->fetch_assoc($res)) {
+      while ($data = $DB->fetchAssoc($res)) {
          $status =Ticket::getStatus($data['status']);
          $datas['labels2'][$data['period']] = $data['period_name'];
          $datas['datas'][$status][$data['period']] = $data['nb'];
@@ -599,18 +599,18 @@ class PluginMreportingHelpdesk Extends PluginMreportingBaseclass {
       return $datas;
    }
 
-   function reportSunburstTicketByCategories($config = array()) {
+   function reportSunburstTicketByCategories($config = []) {
       global $DB;
 
-      $_SESSION['mreporting_selector']['reportSunburstTicketByCategories'] = array('dateinterval');
+      $_SESSION['mreporting_selector']['reportSunburstTicketByCategories'] = ['dateinterval'];
 
       //Init delay value
       $this->sql_date = PluginMreportingCommon::getSQLDate("glpi_tickets.date",
                                                            $config['delay'],
                                                            $config['randname']);
 
-      $flat_datas = array();
-      $datas = array();
+      $flat_datas = [];
+      $datas = [];
 
       $query = "SELECT glpi_tickets.itilcategories_id as id,
             glpi_itilcategories.name as name,
@@ -625,7 +625,7 @@ class PluginMreportingHelpdesk Extends PluginMreportingBaseclass {
          GROUP BY glpi_itilcategories.id
          ORDER BY glpi_itilcategories.name";
       $res = $DB->query($query);
-      while ($data = $DB->fetch_assoc($res)) {
+      while ($data = $DB->fetchAssoc($res)) {
          $flat_datas[$data['id']] = $data;
       }
 
@@ -637,12 +637,12 @@ class PluginMreportingHelpdesk Extends PluginMreportingBaseclass {
 
             if ($current_datas['parent'] != 0
             && $itilcategory->getFromDB($current_datas['parent'])) {
-               $flat_datas[$current_datas['parent']] = array(
+               $flat_datas[$current_datas['parent']] = [
                 'id'     => $current_datas['parent'],
                 'name'   => $itilcategory->fields['name'],
                 'parent' => $itilcategory->fields['itilcategories_id'],
                 'count'  => 0
-               );
+               ];
             }
          }
       }
@@ -653,12 +653,12 @@ class PluginMreportingHelpdesk Extends PluginMreportingBaseclass {
    }
 
 
-   function reportVstackbarTicketStatusByTechnician($config = array()) {
+   function reportVstackbarTicketStatusByTechnician($config = []) {
       global $DB;
 
-      $_SESSION['mreporting_selector']['reportVstackbarTicketStatusByTechnician'] = array('dateinterval');
+      $_SESSION['mreporting_selector']['reportVstackbarTicketStatusByTechnician'] = ['dateinterval'];
 
-      $datas = array();
+      $datas = [];
       //Init delay value
       $this->sql_date = PluginMreportingCommon::getSQLDate("glpi_tickets.date",
                                                            $config['delay'],
@@ -668,7 +668,7 @@ class PluginMreportingHelpdesk Extends PluginMreportingBaseclass {
       $status_keys = array_keys($status);
 
       //get technician list
-      $technicians = array();
+      $technicians = [];
       $query = "SELECT
             CONCAT(glpi_users.firstname, ' ', glpi_users.realname) as fullname,
             glpi_users.name as username
@@ -684,10 +684,10 @@ class PluginMreportingHelpdesk Extends PluginMreportingBaseclass {
          ORDER BY fullname, username";
       $result = $DB->query($query);
 
-      while ($technician = $DB->fetch_assoc($result)) {
-         $technicians[] = array('username' => $technician['username'],
-                                 'fullname' => $technician['fullname'],
-                                 );
+      while ($technician = $DB->fetchAssoc($result)) {
+         $technicians[] = ['username' => $technician['username'],
+                           'fullname' => $technician['fullname'],
+                           ];
       }
 
       //prepare empty values with technician list
@@ -721,7 +721,7 @@ class PluginMreportingHelpdesk Extends PluginMreportingBaseclass {
          ORDER BY technician, username";
       $result = $DB->query($query);
 
-      while ($ticket = $DB->fetch_assoc($result)) {
+      while ($ticket = $DB->fetchAssoc($result)) {
          if (is_null($ticket['technician'])) {
             $ticket['technician'] = __("None");
          }
@@ -731,18 +731,18 @@ class PluginMreportingHelpdesk Extends PluginMreportingBaseclass {
       return $datas;
    }
 
-   function reportHbarTicketNumberByLocation($config = array()) {
+   function reportHbarTicketNumberByLocation($config = []) {
       global $DB;
 
       $_SESSION['mreporting_selector']['reportHbarTicketNumberByLocation']
-         = array('dateinterval', 'limit');
+         = ['dateinterval', 'limit'];
 
       //Init delay value
       $this->sql_date = PluginMreportingCommon::getSQLDate("`glpi_tickets`.`date`",
                                                            $config['delay'],
                                                            $config['randname']);
 
-      $datas = array();
+      $datas = [];
 
       $query = "SELECT COUNT(glpi_tickets.id) as count,
          glpi_locations.name as name
@@ -763,7 +763,7 @@ class PluginMreportingHelpdesk Extends PluginMreportingBaseclass {
 
       $result = $DB->query($query);
 
-      while ($ticket = $DB->fetch_assoc($result)) {
+      while ($ticket = $DB->fetchAssoc($result)) {
          if (empty($ticket['name'])) {
             $label = __("None");
          } else {
