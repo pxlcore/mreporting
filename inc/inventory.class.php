@@ -199,98 +199,34 @@ class PluginMreportingInventory Extends PluginMreportingBaseclass {
       $sql_states   = self::getStateCondition('c.states_id');
       $datas = [];
 
-      $query = "SELECT '< 1 year' Age, count(*) Total, count(*) * 100 / (SELECT count(*)
-                           FROM glpi_computers as c,
-                                glpi_infocoms  as i
-                           WHERE c.`id` = i.`items_id`
-                             AND c.`is_deleted` = 0
-                             AND c.`is_template` = 0
-                             AND itemtype = 'Computer'
-                             $sql_entities
-                             $sql_states) Percent
-         FROM glpi_computers as c,
-              glpi_infocoms  as i
-         WHERE c.`id` = i.`items_id`
-           AND c.`is_deleted` = 0
-           AND c.`is_template` = 0
-           AND itemtype = 'Computer'
-           AND i.`warranty_date` > CURRENT_DATE - INTERVAL 1 YEAR
-           $sql_entities
-           $sql_states
-         UNION
-         SELECT '1-3 years' Age, count(*) Total, count(*) * 100 / (SELECT count(*)
-                                    FROM glpi_computers c,  glpi_infocoms i
-                                    WHERE c.`id` = i.`items_id`
-                                    AND c.`is_deleted` = 0
-                                    AND c.`is_template` = 0
-                                    AND itemtype = 'Computer'
-                                    $sql_entities
-                                    $sql_states) Percent
-         FROM glpi_computers as c,
-              glpi_infocoms  as i
-         WHERE c.`id` = i.`items_id`
-           AND c.`is_deleted` = 0
-           AND c.`is_template` = 0
-           AND itemtype = 'Computer'
-           AND i.`warranty_date` <= CURRENT_DATE - INTERVAL 1 YEAR
-           AND i.`warranty_date` > CURRENT_DATE - INTERVAL 3 YEAR
-           $sql_entities
-           $sql_states
-         UNION
-         SELECT '3-5 years' Age, count(*) Total, count(*) * 100 / (SELECT count(*)
-                                    FROM glpi_computers c,  glpi_infocoms i
-                                    WHERE c.`id` = i.`items_id`
-                                    AND c.`is_deleted` = 0
-                                    AND c.`is_template` = 0
-                                    AND itemtype = 'Computer'
-                                    $sql_entities
-                                    $sql_states) Percent
-         FROM glpi_computers as c,
-              glpi_infocoms  as i
-         WHERE c.`id` = i.`items_id`
-           AND c.`is_deleted` = 0
-           AND c.`is_template` = 0
-           AND itemtype = 'Computer'
-           AND i.`warranty_date` <= CURRENT_DATE - INTERVAL 3 YEAR
-           AND i.`warranty_date` > CURRENT_DATE - INTERVAL 5 YEAR
-           $sql_entities
-           $sql_states
-         UNION
-         SELECT '> 5 years' Age, count(*) Total, count(*) * 100 / (SELECT count(*)
-                                    FROM glpi_computers c,  glpi_infocoms i
-                                    WHERE c.`id` = i.`items_id`
-                                    AND c.`is_deleted` = 0
-                                    AND c.`is_template` = 0
-                                    AND itemtype = 'Computer'
-                                    $sql_entities
-                                    $sql_states) Percent
-         FROM glpi_computers as c,
-              glpi_infocoms  as i
-         WHERE c.`id` = i.`items_id`
-           AND c.`is_deleted` = 0
-           AND c.`is_template` = 0
-           AND itemtype = 'Computer'
-           AND i.`warranty_date` <= CURRENT_DATE - INTERVAL 5 YEAR
-           $sql_entities
-           $sql_states
-         UNION
-         SELECT 'Undefined' Age, count(*) Total, count(*) * 100 / (SELECT count(*)
-                                    FROM glpi_computers c,  glpi_infocoms i
-                                    WHERE c.`id` = i.`items_id`
-                                    AND c.`is_deleted` = 0
-                                    AND c.`is_template` = 0
-                                    AND itemtype = 'Computer'
-                                    $sql_entities
-                                    $sql_states) Percent
-         FROM glpi_computers as c,
-              glpi_infocoms  as i
-         WHERE c.`id` = i.`items_id`
-           AND c.`is_deleted` = 0
-           AND c.`is_template` = 0
-           AND itemtype = 'Computer'
-            AND i.`warranty_date` IS NULL
-            $sql_entities
-            $sql_states";
+      $query = "SELECT
+                  CASE
+                     WHEN i.`warranty_date` between (CURRENT_DATE - INTERVAL 1 YEAR) AND NOW() THEN '< 1 years'
+                     WHEN i.`warranty_date` between (CURRENT_DATE - INTERVAL 3 YEAR) AND (CURRENT_DATE - INTERVAL 1 YEAR) THEN '1-3 years'
+                     WHEN i.`warranty_date` between (CURRENT_DATE - INTERVAL 5 YEAR) AND (CURRENT_DATE - INTERVAL 3 YEAR) THEN '3-5 years'
+                     WHEN i.`warranty_date` between (CURRENT_DATE - INTERVAL 7 YEAR) AND (CURRENT_DATE - INTERVAL 5 YEAR) THEN '5-7 years'
+                     WHEN i.`warranty_date` between (CURRENT_DATE - INTERVAL 9 YEAR) AND (CURRENT_DATE - INTERVAL 7 YEAR) THEN '7-9 years'
+                     WHEN i.`warranty_date` < (CURRENT_DATE - INTERVAL 9 YEAR) THEN '9 years and more'
+                     ELSE 'Undefined'
+                  END AS Age,
+                  count(*) as Total,
+                  count(*) * 100 / (SELECT count(*) as summe
+                     FROM glpi_computers AS c
+                     LEFT JOIN glpi_infocoms AS i ON i.`items_id` = c.`id`
+                     WHERE itemtype = 'Computer'
+                     AND c.`is_deleted` = 0
+                     AND c.`is_template` = 0
+                     $sql_entities
+                     $sql_states
+                     ) AS Percent
+                  FROM glpi_computers AS c
+                  LEFT JOIN glpi_infocoms AS i ON i.`items_id` = c.`id`
+                  WHERE itemtype = 'Computer'
+                  AND c.`is_deleted` = 0
+                  AND c.`is_template` = 0
+                  $sql_entities
+                  $sql_states
+                  GROUP BY Age";
       $result = $DB->query($query);
 
       while ($computer = $DB->fetchAssoc($result)) {
